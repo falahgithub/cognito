@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export function ConfigureAmplifyClientSide() {
   useEffect(() => {
-    Amplify.configure(amplifyConfig, { ssr: true });
+    Amplify.configure(amplifyConfig);
   }, []);
   return null;
 }
