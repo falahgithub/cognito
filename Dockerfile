@@ -1,41 +1,41 @@
-# syntax=docker/dockerfile:1
+# # syntax=docker/dockerfile:1
 
-# ─── Stage 1: Dependencies ───
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install
+# # ─── Stage 1: Dependencies ───
+# FROM node:20-alpine AS deps
+# RUN apk add --no-cache libc6-compat
+# WORKDIR /app
+# COPY package.json package-lock.json* ./
+# RUN npm install
 
-# ─── Stage 2: Builder ───
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-# Build-time env vars (passed via --build-arg)
-ARG NEXT_PUBLIC_COGNITO_USER_POOL_ID
-ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
-ARG NEXT_PUBLIC_COGNITO_DOMAIN
-ARG NEXT_PUBLIC_REDIRECT_SIGN_IN
-ARG NEXT_PUBLIC_REDIRECT_SIGN_OUT
-ENV NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID
-ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID
-ENV NEXT_PUBLIC_COGNITO_DOMAIN=$NEXT_PUBLIC_COGNITO_DOMAIN
-ENV NEXT_PUBLIC_REDIRECT_SIGN_IN=$NEXT_PUBLIC_REDIRECT_SIGN_IN
-ENV NEXT_PUBLIC_REDIRECT_SIGN_OUT=$NEXT_PUBLIC_REDIRECT_SIGN_OUT
-RUN npm run build
+# # ─── Stage 2: Builder ───
+# FROM node:20-alpine AS builder
+# WORKDIR /app
+# COPY --from=deps /app/node_modules ./node_modules
+# COPY . .
+# # Build-time env vars (passed via --build-arg)
+# ARG NEXT_PUBLIC_COGNITO_USER_POOL_ID
+# ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
+# ARG NEXT_PUBLIC_COGNITO_DOMAIN
+# ARG NEXT_PUBLIC_REDIRECT_SIGN_IN
+# ARG NEXT_PUBLIC_REDIRECT_SIGN_OUT
+# ENV NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID
+# ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=$NEXT_PUBLIC_COGNITO_CLIENT_ID
+# ENV NEXT_PUBLIC_COGNITO_DOMAIN=$NEXT_PUBLIC_COGNITO_DOMAIN
+# ENV NEXT_PUBLIC_REDIRECT_SIGN_IN=$NEXT_PUBLIC_REDIRECT_SIGN_IN
+# ENV NEXT_PUBLIC_REDIRECT_SIGN_OUT=$NEXT_PUBLIC_REDIRECT_SIGN_OUT
+# RUN npm run build
 
-# ─── Stage 3: Runner ───
-FROM node:20-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-USER nextjs
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-CMD ["node", "server.js"]
+# # ─── Stage 3: Runner ───
+# FROM node:20-alpine AS runner
+# WORKDIR /app
+# ENV NODE_ENV=production
+# RUN addgroup --system --gid 1001 nodejs
+# RUN adduser --system --uid 1001 nextjs
+# COPY --from=builder /app/public ./public
+# COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+# COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# USER nextjs
+# EXPOSE 3000
+# ENV PORT=3000
+# ENV HOSTNAME="0.0.0.0"
+# CMD ["node", "server.js"]
